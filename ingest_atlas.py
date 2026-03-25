@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from langchain_community.document_loaders import (
@@ -6,10 +7,9 @@ from langchain_community.document_loaders import (
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-
-
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
 # 1. Setup Atlas Connection
-MONGO_URI = "mongodb+srv://suyashsingh2711_db_user:KeS5yYYNpztOWwRX@placementcluster.sicsdzv.mongodb.net/?appName=PlacementCluster"
 DB_NAME = "placement_rag"
 COLLECTION_NAME = "knowledge_base"
 
