@@ -18,14 +18,14 @@ import certifi
 
 # ... inside your ingest_to_mongodb function ...
 
-print("🚀 Connecting to MongoDB Atlas...")
+print(" Connecting to MongoDB Atlas...")
 
 client = MongoClient(
     MONGO_URI,
-    tls=True,                                 # Turns on security
-    tlsCAFile=certifi.where(),               # Uses the 'certifi' security keys
-    tlsAllowInvalidCertificates=True,        # Bypasses the 'Alert 80' handshake crash
-    serverSelectionTimeoutMS=30000           # Gives it time to think
+    tls=True,                                
+    tlsCAFile=certifi.where(),               
+    tlsAllowInvalidCertificates=True,        
+    serverSelectionTimeoutMS=30000           
 )
 
 def ingest_to_mongodb(data):
@@ -38,7 +38,7 @@ def ingest_to_mongodb(data):
     }
 
     documents = []
-    print(f"🔍 Scanning folder: {data}")
+    print(f" Scanning folder: {data}")
     
     # --- THE MISSING LOOP: This actually loads your files ---
     for ext, loader_cls in loader_mapping.items():
@@ -51,12 +51,12 @@ def ingest_to_mongodb(data):
         try:
             loaded_docs = loader.load()
             documents.extend(loaded_docs)
-            print(f"✅ Loaded {len(loaded_docs)} documents with extension {ext}")
+            print(f" Loaded {len(loaded_docs)} documents with extension {ext}")
         except Exception as e:
-            print(f"⚠️ Warning: Could not load {ext} files. Error: {e}")
+            print(f" Warning: Could not load {ext} files. Error: {e}")
 
     if not documents:
-        print("❌ ERROR: No documents were found. Check if your /data folder has files!")
+        print(" ERROR: No documents were found. Check if your /data folder has files!")
         return
 
     # 2. Split the documents into smaller chunks
@@ -71,7 +71,7 @@ def ingest_to_mongodb(data):
     client = MongoClient(MONGO_URI)
     collection = client[DB_NAME][COLLECTION_NAME]
 
-    print(f"🚀 Pushing {len(docs)} chunks to MongoDB Atlas...")
+    print(f" Pushing {len(docs)} chunks to MongoDB Atlas...")
     
     vector_store = MongoDBAtlasVectorSearch.from_documents(
         documents=docs,
@@ -80,7 +80,7 @@ def ingest_to_mongodb(data):
         index_name="vector_index" 
     )
     
-    print("✨ SUCCESS: Your placement data is now live in the cloud!")
+    print(" SUCCESS: Your placement data is now live in the cloud!")
 
 # This part actually starts the script
 if __name__ == "__main__":
