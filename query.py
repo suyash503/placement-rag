@@ -45,6 +45,12 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
 ])
 
+def get_rag_response(user_query):
+  
+    response = qa_chain.invoke({"input": user_query})
+    
+    return response['answer'], response['context']
+
 # 5. Build the Chain
 question_answer_chain = create_stuff_documents_chain(llm, prompt)
 qa_chain = create_retrieval_chain(vector_db.as_retriever(search_kwargs={"k": 5}), question_answer_chain)

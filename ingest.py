@@ -1,17 +1,14 @@
 import os
+from pymongo import MongoClient
+from langchain_mongodb import MongoDBAtlasVectorSearch
 from langchain_community.document_loaders import (
-    DirectoryLoader,
-    PyPDFLoader,
-    CSVLoader,
-    UnstructuredExcelLoader,
-    TextLoader
+    DirectoryLoader, PyPDFLoader, CSVLoader, UnstructuredExcelLoader, TextLoader
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_chroma import Chroma
 
-def ingest_all_docs(folder_path):
-    # 1. Define loaders for different extensions
+def ingest_to_atlas(folder_path):
+    # 1. Define loaders (Keep exactly as you had them)
     loader_mapping = {
         ".pdf": PyPDFLoader,
         ".csv": CSVLoader,
@@ -20,8 +17,7 @@ def ingest_all_docs(folder_path):
     }
 
     documents = []
-    
-    print(f" Scanning folder: {folder_path}")
+    print(f"🔍 Scanning folder: {folder_path}")
     
     for ext, loader_cls in loader_mapping.items():
         loader = DirectoryLoader(
@@ -33,41 +29,45 @@ def ingest_all_docs(folder_path):
         try:
             loaded_docs = loader.load()
             documents.extend(loaded_docs)
-            print(f" Loaded {len(loaded_docs)} documents with extension {ext}")
+            print(f"✅ Loaded {len(loaded_docs)} documents with extension {ext}")
         except Exception as e:
-            print(f" Warning: Could not load files with extension {ext}. Error: {e}")
+            print(f"⚠️ Warning: Could not load {ext} files. Error: {e}")
 
     if not documents:
-        print(" No documents found. Please check your folder path.")
+        print("❌ No documents found.")
         return
 
-    # 2. Smart Splitting
+    # 2. Smart Splitting (Keep your logic)
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, 
         chunk_overlap=100,
         separators=["\n\n", "\n", " ", ""]
     )
     final_chunks = text_splitter.split_documents(documents)
-    print(f"✂️  Split documents into {len(final_chunks)} chunks.")
+    print(f"✂️ Split into {len(final_chunks)} chunks.")
 
-    # 3. Store in Vector DB (Chroma)
-    print("Generating embeddings and updating ChromaDB...")
+    # 3. MongoDB Atlas Integration
+    print("🚀 Connecting to MongoDB Atlas...")
+    
+    # Replace with your actual Connection String
+    MONGO_URI = "mongodb+srv://suyash:<db_password>@cluster0.6avycwa.mongodb.net/?appName=Cluster0"
+    client = MongoClient(MONGO_URI)
+    collection = client["placement_rag"]["knowledge_base"]
+
+    # Use your HuggingFace model (Dimensions = 384)
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     
-    # We use .from_documents to create/overwrite the DB
-    vector_db = Chroma.from_documents(
+    # Push to Atlas
+    vector_store = MongoDBAtlasVectorSearch.from_documents(
         documents=final_chunks, 
         embedding=embeddings, 
-        persist_directory="./chroma_db"
+        collection=collection,
+        index_name="vector_index" # This must match the index you create in Atlas UI
     )
     
-    print(f"🚀 SUCCESS: System updated with {len(final_chunks)} searchable units!")
+    print(f"✨ SUCCESS: Data pushed to MongoDB Atlas!")
 
 if __name__ == "__main__":
     DATA_PATH = r"C:\placement-rag\data" 
-    
-    if not os.path.exists(DATA_PATH):
-        os.makedirs(DATA_PATH)
-        print(f"Created folder at {DATA_PATH}. Put your files there and run again!")
-    else:
-        ingest_all_docs(DATA_PATH)
+    ingest_to_atlas(DATA_PATH)
+    szAYDae6gKhtRsNF
