@@ -1,6 +1,7 @@
 streamlit
 pymongo
 langchain-mongodb
+sentence-transformers
 langchain-huggingface
 google-generativeai
 certifi
