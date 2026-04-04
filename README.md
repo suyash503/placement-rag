@@ -1,6 +1,6 @@
-# 🎓 AKGEC Placement RAG Assistant
+# 🎓CollegePlacement RAG Assistant
 
-An AI-powered conversational agent designed to help students at **Ajay Kumar Garg Engineering College (AKGEC)** navigate complex placement data. Instead of manually searching through thousands of spreadsheet rows, students can query eligibility, packages, and company details using natural language.
+An AI-powered conversational agent designed to help students navigate complex placement data. Instead of manually searching through thousands of spreadsheet rows, students can query eligibility, packages, and company details using natural language.
 
 ---
 
