@@ -18,3 +18,4 @@ frontend/.vite/
 eval_results/
 .DS_Store
 .claude/
+docs/

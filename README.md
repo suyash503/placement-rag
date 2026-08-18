@@ -130,9 +130,6 @@ backend/
     golden_set.json         33 questions with metadata predicates
     run_eval.py             hit-rate@k, precision@k, MRR
 frontend/                   React + TS + Vite + Tailwind
-docs/
-  BUILD_JOURNAL.md          how it was built, and what broke on the way
-  INTERVIEW_PREP.md         the theory behind every choice here
 ```
 
 ---
@@ -206,13 +203,3 @@ year, CGPA cutoff tracks package, branch sets follow what the company does.
 
 Realistic enough to build and evaluate retrieval against. **Not real placement
 statistics, and not usable for any actual decision.**
-
----
-
-## Notes
-
-Full write-up of the design decisions and the bugs behind them:
-[docs/BUILD_JOURNAL.md](docs/BUILD_JOURNAL.md).
-The theory — cosine similarity, BM25, RRF, bi- vs cross-encoders, chunking,
-pre-filtering, evaluation metrics — is in
-[docs/INTERVIEW_PREP.md](docs/INTERVIEW_PREP.md).
