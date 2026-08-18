@@ -9,15 +9,21 @@ RUN npm run build
 
 FROM python:3.12-slim
 
+# Spaces runs the container as uid 1000, so everything the app touches at runtime
+# has to be writable by that user rather than only by root.
+RUN useradd -m -u 1000 app
+
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
-    HF_HOME=/app/.cache/huggingface
+    HF_HOME=/home/app/.cache/huggingface \
+    PORT=7860
 
 WORKDIR /app
 
-# CPU-only torch first: the default wheel pulls ~2.5GB of CUDA libraries that a
-# CPU inference container never touches.
+# CPU-only torch first. The default wheel drags in ~2.5GB of CUDA libraries that
+# a CPU inference container never loads, and installing it up front stops the
+# other packages from pulling the GPU build back in as a transitive dependency.
 RUN pip install --no-cache-dir \
     --index-url https://download.pytorch.org/whl/cpu \
     torch==2.5.1
@@ -29,16 +35,16 @@ COPY backend/ ./backend/
 COPY data/ ./data/
 COPY --from=frontend /build/dist ./frontend/dist
 
-# Bake both models into the image. Downloading them on first request instead would
-# make the first visitor wait through ~180MB of model weights.
+RUN chown -R app:app /app
+USER app
+
+# Bake both models into the image. Fetching them on first request instead would
+# make the first visitor wait through ~180MB of weights.
 RUN python -c "\
 from sentence_transformers import SentenceTransformer, CrossEncoder; \
 SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2'); \
 CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 
-RUN mkdir -p /app/.cache && chmod -R 777 /app/.cache
-
 EXPOSE 7860
-ENV PORT=7860
 
 CMD ["sh", "-c", "uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT}"]
