@@ -1,9 +1,10 @@
 import json
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from sse_starlette.sse import EventSourceResponse
 
 from backend.app.core.logging import get_logger
+from backend.app.core.ratelimit import limit_chat
 from backend.app.rag.chain import answer_stream
 from backend.app.rag.schemas import ChatRequest
 
@@ -12,7 +13,7 @@ log = get_logger("api.chat")
 router = APIRouter(tags=["chat"])
 
 
-@router.post("/chat")
+@router.post("/chat", dependencies=[Depends(limit_chat)])
 async def chat(request: ChatRequest) -> EventSourceResponse:
     """Stream the answer as server-sent events.
 

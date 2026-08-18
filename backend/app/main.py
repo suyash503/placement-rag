@@ -1,9 +1,11 @@
 import time
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.app.api.routes import chat, meta
 from backend.app.core.config import get_settings
@@ -73,7 +75,24 @@ async def unhandled(request: Request, exc: Exception):
 app.include_router(meta.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 
+# In a container the React build is served by this same app, which keeps the deploy
+# to one origin and one URL. In development Vite serves it instead and proxies /api.
+FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
 
-@app.get("/")
-async def root():
-    return {"service": "placement-rag", "docs": "/docs", "health": "/api/health"}
+if FRONTEND_DIST.is_dir():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def spa(full_path: str):
+        if full_path.startswith("api/"):
+            return JSONResponse(status_code=404, content={"detail": "Not found"})
+        candidate = FRONTEND_DIST / full_path
+        if full_path and candidate.is_file():
+            return FileResponse(candidate)
+        return FileResponse(FRONTEND_DIST / "index.html")
+
+else:
+
+    @app.get("/")
+    async def root():
+        return {"service": "placement-rag", "docs": "/docs", "health": "/api/health"}

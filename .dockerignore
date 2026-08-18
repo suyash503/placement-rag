@@ -1,0 +1,15 @@
+.git
+.gitignore
+.venv
+.claude
+__pycache__
+**/__pycache__
+*.pyc
+.env
+.ruff_cache
+docs
+eval_results
+frontend/node_modules
+frontend/dist
+data/placement_enriched.csv
+uv.lock
