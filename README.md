@@ -9,11 +9,6 @@ structured filter extraction, hybrid vector + BM25 search fused with Reciprocal
 Rank Fusion, cross-encoder reranking, and a golden-set evaluation harness that
 measures whether any of it actually helps.
 
-![Demo](assets/demo.gif)
-
-*Numeric query, citation cards, and the retrieval trace showing what each leg of
-the search found.*
-
 ---
 
 ## Retrieval evaluation
