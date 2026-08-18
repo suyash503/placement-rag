@@ -9,52 +9,16 @@ structured filter extraction, hybrid vector + BM25 search fused with Reciprocal
 Rank Fusion, cross-encoder reranking, and a golden-set evaluation harness that
 measures whether any of it actually helps.
 
----
+![Demo](assets/demo.gif)
 
-## Why hybrid retrieval
-
-Pure vector search leaves whole classes of question on the table, and tuning `k`
-fixes none of them:
-
-| Question | Why vector search alone falls short | Fix |
-| --- | --- | --- |
-| *"companies above 10 LPA"* | `above 10 LPA` and `above 5 LPA` embed almost identically — the threshold simply isn't in the vector | extract the constraint, push it to the DB as a pre-filter |
-| *"which years did Capgemini recruit?"* | the answer lives in an aggregate, not in any single row | index company-profile documents alongside record documents |
-| *"CS companies in 2018 above 12 LPA"* | three constraints at once; semantic similarity ranks the survivors badly | BM25 as a second opinion, fused by rank |
-
-Measured below: hybrid retrieval takes aggregate questions from 0.50 to 1.00 and
-multi-constraint questions from 0.33 to 1.00.
-
-The pipeline runs both retrievers, fuses them by rank, then reorders the survivors
-with a model that actually reads the query and the document together.
-
-```mermaid
-flowchart TD
-    Q[Question] --> C{prior turns?}
-    C -->|yes| R[LLM rewrites as<br/>standalone question]
-    C -->|no| P
-    R --> P[Query router<br/>regex + LLM fallback]
-    P -->|"package_lpa: gte 10<br/>year: 2018<br/>branches: CS"| F[Metadata pre-filter]
-
-    F --> V[Vector search<br/>MiniLM · cosine · HNSW]
-    F --> B[Full-text search<br/>BM25]
-    V --> RRF[Reciprocal Rank Fusion<br/>k = 60]
-    B --> RRF
-    RRF -->|25 candidates| X[Cross-encoder rerank<br/>ms-marco-MiniLM-L-6-v2]
-    X --> D[Cap 3 per company]
-    D -->|6 documents| G[Gemini 2.5 Flash<br/>grounded + cited]
-    G -->|SSE stream| U[React UI]
-
-    subgraph Atlas[MongoDB Atlas]
-        V
-        B
-    end
-```
+*Numeric query, citation cards, and the retrieval trace showing what each leg of
+the search found.*
 
 ---
 
 ## Retrieval evaluation
 
+Every retrieval change in this project was justified by measurement, not by feel.
 33 questions across seven categories, three configurations, same golden set.
 Reproduce with `uv run python backend/eval/run_eval.py --all-configs`.
 
@@ -90,6 +54,48 @@ Reading it honestly:
 Recall is deliberately not reported: *"companies above 10 LPA"* has 235 relevant
 records, so `recall@6` would cap at 0.026 regardless of how good retrieval is —
 it would measure the question, not the system.
+
+---
+
+## Why hybrid retrieval
+
+Pure vector search leaves whole classes of question on the table, and tuning `k`
+fixes none of them:
+
+| Question | Why vector search alone falls short | Fix |
+| --- | --- | --- |
+| *"companies above 10 LPA"* | `above 10 LPA` and `above 5 LPA` embed almost identically — the threshold simply isn't in the vector | extract the constraint, push it to the DB as a pre-filter |
+| *"which years did Capgemini recruit?"* | the answer lives in an aggregate, not in any single row | index company-profile documents alongside record documents |
+| *"CS companies in 2018 above 12 LPA"* | three constraints at once; semantic similarity ranks the survivors badly | BM25 as a second opinion, fused by rank |
+
+Measured above: hybrid retrieval takes aggregate questions from 0.50 to 1.00 and
+multi-constraint questions from 0.33 to 1.00.
+
+The pipeline runs both retrievers, fuses them by rank, then reorders the survivors
+with a model that actually reads the query and the document together.
+
+```mermaid
+flowchart TD
+    Q[Question] --> C{prior turns?}
+    C -->|yes| R[LLM rewrites as<br/>standalone question]
+    C -->|no| P
+    R --> P[Query router<br/>regex + LLM fallback]
+    P -->|"package_lpa: gte 10<br/>year: 2018<br/>branches: CS"| F[Metadata pre-filter]
+
+    F --> V[Vector search<br/>MiniLM · cosine · HNSW]
+    F --> B[Full-text search<br/>BM25]
+    V --> RRF[Reciprocal Rank Fusion<br/>k = 60]
+    B --> RRF
+    RRF -->|25 candidates| X[Cross-encoder rerank<br/>ms-marco-MiniLM-L-6-v2]
+    X --> D[Cap 3 per company]
+    D -->|6 documents| G[Gemini 2.5 Flash<br/>grounded + cited]
+    G -->|SSE stream| U[React UI]
+
+    subgraph Atlas[MongoDB Atlas]
+        V
+        B
+    end
+```
 
 ---
 
@@ -203,3 +209,28 @@ year, CGPA cutoff tracks package, branch sets follow what the company does.
 
 Realistic enough to build and evaluate retrieval against. **Not real placement
 statistics, and not usable for any actual decision.**
+
+---
+
+## Production notes
+
+The container needs ~1.5 GB of RAM, almost all of it PyTorch: the embedding model
+and the cross-encoder both run in-process. That is fine for a demo and wrong for
+production — the web tier should not be carrying model weights. It couples serving
+to inference, so you cannot scale the two independently, and it puts a 512 MB
+hosting floor under something that is otherwise a small API.
+
+The fix is to move embedding and reranking behind a hosted API or a separate
+inference service. Runtime drops to roughly 150 MB, the model becomes swappable
+without redeploying the app, and the evaluation harness can measure what the swap
+costs in retrieval quality. That is a change worth making deliberately and
+measuring, rather than assuming.
+
+Two other things that would need to change before this served real traffic:
+
+* The rate limiter holds state in process, so it is per-container. More than one
+  instance needs shared state such as Redis.
+* Ingestion is a script run by hand. Real placement data arrives every season, so
+  it would need to be a scheduled job with change detection rather than a full
+  re-embed — the deterministic document ids already make that safe to run
+  repeatedly.
