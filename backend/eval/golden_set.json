@@ -1,0 +1,206 @@
+[
+  {
+    "id": "sem-01",
+    "category": "semantic",
+    "question": "Which companies hire software developers?",
+    "relevant": { "doc_type": "record", "role_contains_any": ["Software", "Product Engineer", "Programmer"] }
+  },
+  {
+    "id": "sem-02",
+    "category": "semantic",
+    "question": "Are there any consulting or analytics roles available?",
+    "relevant": { "doc_type": "record", "role_contains_any": ["Consultant", "Analyst", "Data Scientist"] }
+  },
+  {
+    "id": "sem-03",
+    "category": "semantic",
+    "question": "Which recruiters take students for site and construction work?",
+    "relevant": { "doc_type": "record", "role_contains_any": ["Site Engineer", "Project Engineer", "Design Engineer"] }
+  },
+  {
+    "id": "sem-04",
+    "category": "semantic",
+    "question": "Companies that hire interns rather than full time",
+    "relevant": { "doc_type": "record", "hiring_type_contains_any": ["Internship"] }
+  },
+  {
+    "id": "sem-05",
+    "category": "semantic",
+    "question": "Which banks and financial firms recruited on campus?",
+    "relevant": { "company_in": ["HSBC", "Barclays", "BNP Paribas", "Morgan Stanley", "J P Morgan", "Kotak", "ICICI Bank", "Dolat Capital", "Ariston Capital"] }
+  },
+
+  {
+    "id": "name-01",
+    "category": "exact_name",
+    "question": "What package did Morgan Stanley offer?",
+    "relevant": { "company": "Morgan Stanley" }
+  },
+  {
+    "id": "name-02",
+    "category": "exact_name",
+    "question": "Zeus Learning eligibility criteria",
+    "relevant": { "company": "Zeus Learning" }
+  },
+  {
+    "id": "name-03",
+    "category": "exact_name",
+    "question": "What is the selection process at Seclore?",
+    "relevant": { "company": "Seclore" }
+  },
+  {
+    "id": "name-04",
+    "category": "exact_name",
+    "question": "Details about Amdocs recruitment",
+    "relevant": { "company": "Amdocs" }
+  },
+  {
+    "id": "name-05",
+    "category": "exact_name",
+    "question": "ZS Associates CGPA cutoff",
+    "relevant": { "company": "ZS Associates" }
+  },
+  {
+    "id": "name-06",
+    "category": "exact_name",
+    "question": "Did Quantiphi visit the campus?",
+    "relevant": { "company": "Quantiphi" }
+  },
+
+  {
+    "id": "num-01",
+    "category": "numeric_filter",
+    "question": "Show me companies with salary above 10 LPA",
+    "relevant": { "doc_type": "record", "package_lpa": { "gte": 10 } }
+  },
+  {
+    "id": "num-02",
+    "category": "numeric_filter",
+    "question": "Which companies paid more than 20 lakhs?",
+    "relevant": { "doc_type": "record", "package_lpa": { "gte": 20 } }
+  },
+  {
+    "id": "num-03",
+    "category": "numeric_filter",
+    "question": "Companies offering between 6 and 12 LPA",
+    "relevant": { "doc_type": "record", "package_lpa": { "gte": 6, "lte": 12 } }
+  },
+  {
+    "id": "num-04",
+    "category": "numeric_filter",
+    "question": "Any company paying under 4 LPA?",
+    "relevant": { "doc_type": "record", "package_lpa": { "lte": 4 } }
+  },
+  {
+    "id": "num-05",
+    "category": "numeric_filter",
+    "question": "Which companies visited in 2018?",
+    "relevant": { "doc_type": "record", "year": 2018 }
+  },
+  {
+    "id": "num-06",
+    "category": "numeric_filter",
+    "question": "Recruiters between 2015 and 2016",
+    "relevant": { "doc_type": "record", "year": { "gte": 2015, "lte": 2016 } }
+  },
+
+  {
+    "id": "elig-01",
+    "category": "eligibility",
+    "question": "I have 6.5 CGPA, which companies am I eligible for?",
+    "relevant": { "doc_type": "record", "cgpa_cutoff": { "lte": 6.5 } }
+  },
+  {
+    "id": "elig-02",
+    "category": "eligibility",
+    "question": "Companies open to Computer Engineering students",
+    "relevant": { "doc_type": "record", "branches_contains": "Computer Engineering" }
+  },
+  {
+    "id": "elig-03",
+    "category": "eligibility",
+    "question": "Which companies take mechanical branch students?",
+    "relevant": { "doc_type": "record", "branches_contains": "Mechanical" }
+  },
+  {
+    "id": "elig-04",
+    "category": "eligibility",
+    "question": "Companies for IT branch with package above 8 LPA",
+    "relevant": { "doc_type": "record", "branches_contains": "Information Technology", "package_lpa": { "gte": 8 } }
+  },
+  {
+    "id": "elig-05",
+    "category": "eligibility",
+    "question": "Are there companies that allow active backlogs?",
+    "relevant": { "doc_type": "record", "active_backlogs": "Allowed" }
+  },
+  {
+    "id": "elig-06",
+    "category": "eligibility",
+    "question": "Civil engineering openings in 2017",
+    "relevant": { "doc_type": "record", "branches_contains": "Civil", "year": 2017 }
+  },
+
+  {
+    "id": "agg-01",
+    "category": "aggregate",
+    "question": "How many times did TCS visit and in which years?",
+    "relevant": { "doc_type": "company", "company": "TCS" }
+  },
+  {
+    "id": "agg-02",
+    "category": "aggregate",
+    "question": "Tell me about Infosys across all years",
+    "relevant": { "doc_type": "company", "company": "Infosys" }
+  },
+  {
+    "id": "agg-03",
+    "category": "aggregate",
+    "question": "Give me an overview of Accenture recruitment",
+    "relevant": { "doc_type": "company", "company": "Accenture" }
+  },
+  {
+    "id": "agg-04",
+    "category": "aggregate",
+    "question": "Which years did Capgemini recruit?",
+    "relevant": { "doc_type": "company", "company": "Capgemini" }
+  },
+
+  {
+    "id": "multi-01",
+    "category": "multi_constraint",
+    "question": "Computer Engineering companies in 2018 paying more than 12 LPA",
+    "relevant": { "doc_type": "record", "branches_contains": "Computer Engineering", "year": 2018, "package_lpa": { "gte": 12 } }
+  },
+  {
+    "id": "multi-02",
+    "category": "multi_constraint",
+    "question": "I have 7 CGPA and want a package over 8 LPA in Information Technology",
+    "relevant": { "doc_type": "record", "cgpa_cutoff": { "lte": 7 }, "package_lpa": { "gte": 8 }, "branches_contains": "Information Technology" }
+  },
+  {
+    "id": "multi-03",
+    "category": "multi_constraint",
+    "question": "Mechanical companies between 2015 and 2017 above 5 LPA",
+    "relevant": { "doc_type": "record", "branches_contains": "Mechanical", "year": { "gte": 2015, "lte": 2017 }, "package_lpa": { "gte": 5 } }
+  },
+
+  {
+    "id": "refuse-01",
+    "category": "refusal",
+    "question": "What was the hostel fee at Dwarkadas J. Sanghvi College of Engineering?",
+    "expect_refusal": true
+  },
+  {
+    "id": "refuse-02",
+    "category": "refusal",
+    "question": "Which company will visit campus in 2027?",
+    "expect_refusal": true
+  },
+  {
+    "id": "refuse-03",
+    "category": "refusal",
+    "question": "Who is the placement officer's phone number?",
+    "expect_refusal": true
+  }
+]

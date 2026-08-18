@@ -1,11 +1,20 @@
 .env
-
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+.ruff_cache/
 
-chroma_db/
-
-
-data/*.csv
+# The source export ships with the repo so the project is runnable on clone.
+# The enriched file is generated from it by backend/scripts/enrich_dataset.py.
+data/placement_enriched.csv
 data/*.pdf
+data/*.xlsx
+
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+eval_results/
+.DS_Store
+.claude/
