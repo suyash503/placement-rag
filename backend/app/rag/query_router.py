@@ -144,6 +144,13 @@ def parse_query(question: str, known_companies: set[str] | None = None) -> Parse
     else:
         prefer_doc_type = "record"
         notes.append("specific question -> prefer individual drive records")
+        # A company profile stores its *highest* package and its year/branch sets,
+        # so "package >= 10" also matches a company that mostly paid 6 LPA. When a
+        # specific question carries constraints, only the drive records satisfy them
+        # exactly, so keep the search to records.
+        if filters:
+            filters["doc_type"] = {"$eq": "record"}
+            notes.append("constraints apply per drive -> search drive records only")
 
     if known_companies:
         hit = next((c for c in known_companies if len(c) > 3 and c in low), None)
