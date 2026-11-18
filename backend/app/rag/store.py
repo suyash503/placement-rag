@@ -17,12 +17,16 @@ def get_client() -> MongoClient:
     if not settings.mongo_uri:
         raise RuntimeError("MONGO_URI is not set. Copy .env.example to .env and fill it in.")
 
+    # Atlas (mongodb+srv://) always uses TLS. A local Atlas deployment
+    # (mongodb://localhost...) does not, so TLS follows the connection string.
+    use_tls = settings.mongo_uri.startswith("mongodb+srv://") or "tls=true" in settings.mongo_uri.lower()
+    tls_options = {"tls": True, "tlsCAFile": certifi.where()} if use_tls else {}
+
     return MongoClient(
         settings.mongo_uri,
-        tls=True,
-        tlsCAFile=certifi.where(),
         serverSelectionTimeoutMS=20000,
         appname="placement-rag",
+        **tls_options,
     )
 
 
